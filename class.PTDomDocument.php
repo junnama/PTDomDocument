@@ -79,7 +79,7 @@ class PTDomDocument extends DomDocument {
         return $this->query( new Translator( trim( $selector ) ) );
     }
 
-    public static function selectorToXpath ( $selector ) {
+    public static function selector2xpath ( $selector ) {
         $selector = new Translator( trim( $selector ) );
         return (string) $selector;
     }
