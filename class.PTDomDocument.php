@@ -10,14 +10,14 @@ class PTDomDocument extends DomDocument {
     const MB_ENCODE_NUMERICENTITY_MAP = [0x80, 0x10FFFF, 0, 0x1FFFFF];
     private $xpath = null;
     public  $text_encoding = 'utf-8';
-    
+
     public function __construct ( $version = '1.0', $encoding = 'utf-8' ) {
         $this->text_encoding = $encoding;
         parent::__construct( $version, $encoding );
         $this->registerNodeClass( 'DOMElement', 'PTDOMElement' );
     }
 
-    function loadHTML ( string $source, $options = 0 ) {
+    function loadHTML ( $source, $options = 0 ) {
         libxml_use_internal_errors( true );
         if ( preg_match( '/^\xEF\xBB\xBF/', $source ) ) {
             // BOM
@@ -34,7 +34,7 @@ class PTDomDocument extends DomDocument {
         return $res;
     }
 
-    function loadHTMLFile ( string $filename, $options = 0 ) {
+    function loadHTMLFile ( $filename, $options = 0 ) {
         $source = @file_get_contents( $filename );
         if ( $source === false ) {
             return false;
@@ -42,26 +42,28 @@ class PTDomDocument extends DomDocument {
         return $this->loadHTML( $source, $options );
     }
 
-    function getElementsByClassName ( string $name ) {
+    function getElementsByClassName ( $name ) {
         return $this->query( "//*[contains(@class, '{$name}')]" );
     }
 
-    function query ( string $query ) {
+    function query ( $query ) {
         $xpath = $this->xpath ? $this->xpath : new DOMXpath( $this );
         return $xpath->query( $query );
     }
 
-    function saveHTML ( ? DOMNode $node = null ) : string|false {
-        $content = parent::saveHTML();
-        if ( PHP_VERSION >= 8.2 ) {
-            $content = html_entity_decode( $content );
-        } else {
-            $content = mb_convert_encoding( $content, $this->text_encoding, 'HTML-ENTITIES' );
+    function saveHTML ( $item = null ) {
+        $content = parent::saveHTML( $item );
+        if (! $item ) {
+            if ( PHP_VERSION >= 8.2 ) {
+                $content = html_entity_decode( $content );
+            } else {
+                $content = mb_convert_encoding( $content, $this->text_encoding, 'HTML-ENTITIES' );
+            }
         }
         return $content;
     }
 
-    function querySelector ( string $selector ) {
+    function querySelector ( $selector ) {
         $items = $this->query( new Translator( trim( $selector ) ) );
         if ( $items->length ) {
             return $items->item( 0 );
@@ -69,11 +71,11 @@ class PTDomDocument extends DomDocument {
         return null;
     }
 
-    function querySelectorAll ( string $selector ) {
+    function querySelectorAll ( $selector ) {
         return $this->query( new Translator( trim( $selector ) ) );
     }
 
-    public static function selectorToXpath ( string $selector ) {
+    public static function selectorToXpath ( $selector ) {
         $selector = new Translator( trim( $selector ) );
         return (string) $selector;
     }
@@ -97,7 +99,7 @@ class PTDOMElement extends DOMElement {
         }
     }
 
-    function find ( string $selector ) {
+    function find ( $selector ) {
         $items = $this->ownerDocument->querySelectorAll( $selector );
         $children = $this->getChildrenElements();
         $elements = [];
@@ -162,7 +164,7 @@ class PTDOMElement extends DOMElement {
         return $outerHTML;
     }
 
-    function getElementsByClassName ( string $name ) {
+    function getElementsByClassName ( $name ) {
         $childlenNodes = $this->getChildrenElements();
         $elements = [];
         foreach ( $childlenNodes as $child ) {
