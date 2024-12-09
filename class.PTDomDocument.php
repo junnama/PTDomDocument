@@ -51,8 +51,12 @@ class PTDomDocument extends DomDocument {
         return $xpath->query( $query );
     }
 
+    #[\ReturnTypeWillChange]
     function saveHTML ( $item = null ) {
         $content = parent::saveHTML( $item );
+        if ( $content === false ) {
+            return false; 
+        }
         if (! $item ) {
             if ( PHP_VERSION >= 8.2 ) {
                 $content = html_entity_decode( $content );
