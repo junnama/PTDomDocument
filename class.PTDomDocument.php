@@ -118,6 +118,148 @@ class PTDOMElement extends DOMElement {
         return new PTDOMNodeList( $elements );
     }
 
+    function next ( $selector, $prev = false ) {
+        $siblings = $this->parentNode->childNodes;
+        if ( $prev ) {
+            $elements = [];
+            foreach ( $siblings as $child ) {
+                if ( $child === $this ) {
+                    $elements[] = $child;
+                    break;
+                } else if ( $child->nodeType === 1 ) {
+                    $elements[] = $child;
+                }
+            }
+            $siblings = array_reverse( $elements );
+            if (! $selector ) {
+                return $siblings[ count( $siblings ) - 2 ] ?? null;
+            }
+        }
+        if (! $selector ) {
+            $match = false;
+            foreach ( $siblings as $child ) {
+                if ( $match && $child->nodeType === 1 ) {
+                    return $child;
+                }
+                if ( $child === $this ) {
+                    $match = true;
+                }
+            }
+            return null;
+        } else {
+            $items = $this->parentNode->find( $selector );
+            $match = false;
+            foreach ( $siblings as $child ) {
+                if ( $match && $child->nodeType === 1 ) {
+                    foreach ( $items as $item ) {
+                        if ( $child === $item ) {
+                            return $child;
+                        }
+                    }
+                }
+                if ( $child === $this ) {
+                    $match = true;
+                }
+            }
+            return null;
+        }
+    }
+
+    function prev ( $selector ) {
+        return $this->next( $selector, true );
+    }
+
+    function siblings ( $selector, $self = false ) {
+        $elements = [];
+        $siblings = $this->parentNode->childNodes;
+        if (! $selector ) {
+            foreach ( $siblings as $child ) {
+                if (! $child->nodeType === 1 ) {
+                    continue;
+                }
+                if ( $child !== $this || $self ) {
+                    $elements[] = $child;
+                }
+            }
+        } else {
+            $items = $this->parentNode->find( $selector );
+            foreach ( $siblings as $child ) {
+                if ( $child === $this && !$self ) {
+                    continue;
+                }
+                foreach ( $items as $item ) {
+                    if ( $child === $item ) {
+                        $elements[] = $child;
+                        break;
+                    }
+                }
+            }
+        }
+        return new PTDOMNodeList( $elements );
+    }
+
+    function nextAll ( $selector ) {
+        $elements = [];
+        if (! $selector ) {
+            $siblings = $this->siblings( $selector, true );
+            $match = false;
+            foreach ( $siblings as $child ) {
+                if ( $match ) {
+                    $elements[] = $child;
+                } else if ( $child === $this ) {
+                    $match = true;
+                }
+            }
+        } else {
+            $siblings = $this->parentNode->childNodes;
+            $items = $this->parentNode->find( $selector );
+            $match = false;
+            foreach ( $siblings as $child ) {
+                if ( $match && $child->nodeType === 1 ) {
+                    foreach ( $items as $item ) {
+                        if ( $child === $item ) {
+                            $elements[] = $child;
+                            break;
+                        }
+                    }
+                }
+                if ( $child === $this ) {
+                    $match = true;
+                }
+            }
+        }
+        return new PTDOMNodeList( $elements );
+    }
+
+    function prevAll ( $selector ) {
+        $elements = [];
+        if (! $selector ) {
+            $siblings = $this->siblings( $selector, true );
+            foreach ( $siblings as $child ) {
+                if ( $child === $this ) {
+                    break;
+                }
+                $elements[] = $child;
+            }
+        } else {
+            $siblings = $this->parentNode->childNodes;
+            $items = $this->parentNode->find( $selector );
+            foreach ( $siblings as $child ) {
+                if ( $child !== $this && $child->nodeType === 1 ) {
+                    foreach ( $items as $item ) {
+                        if ( $child === $item ) {
+                            $elements[] = $child;
+                        }
+                    }
+                }
+                if ( $child === $this ) {
+                    break;
+                }
+            }
+        }
+        return new PTDOMNodeList( $elements );
+    }
+
     function innerHTML ( $html = null ) {
         if ( is_string( $html ) ) {
             $element = $this;
